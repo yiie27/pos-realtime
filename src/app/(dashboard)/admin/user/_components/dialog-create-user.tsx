@@ -20,11 +20,12 @@ import {
 } from "@/validations/auth-validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import { startTransition, useActionState, useEffect } from "react";
+import { startTransition, useActionState, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { createUser } from "../action";
 import FormSelect from "@/components/common/form-select";
+import FormImage from "@/components/common/form-image";
 
 export default function DialogCreateUser({ refetch }: { refetch: () => void }) {
   const form = useForm<CreateUserForm>({
@@ -35,10 +36,14 @@ export default function DialogCreateUser({ refetch }: { refetch: () => void }) {
   const [createUserState, createUserAction, isPendingCreateUser] =
     useActionState(createUser, INITIAL_STATE_CREATE_USER_FORM);
 
+  const [preview, setPreview] = useState<
+    { file: File; displayUrl: string } | undefined
+  >(undefined);
+
   const onSubmit = form.handleSubmit(async (data) => {
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value);
+      formData.append(key, key === "avatar_url" ? preview!.file ?? "" : value);
     });
 
     startTransition(() => {
@@ -55,6 +60,7 @@ export default function DialogCreateUser({ refetch }: { refetch: () => void }) {
     if (createUserState?.status === "success") {
       toast.success("Create User Success");
       form.reset();
+      setPreview(undefined);
       document.querySelector<HTMLDialogElement>("[data-state='open']")?.click();
       refetch();
     }
@@ -81,6 +87,13 @@ export default function DialogCreateUser({ refetch }: { refetch: () => void }) {
             label="Email"
             placeholder="Insert your email"
             type="email"
+          />
+          <FormImage
+            form={form}
+            name="avatar_url"
+            label="Avatar"
+            preview={preview}
+            setPreview={setPreview}
           />
           <FormSelect
             form={form}

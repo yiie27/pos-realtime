@@ -1,16 +1,17 @@
 "use server";
 
+import { uploadFile } from "@/actions/storage-action";
 import { createClient } from "@/lib/supabase/server";
 import { AuthFormState } from "@/types/auth";
 import { createUserSchemaForm } from "@/validations/auth-validation";
 
 export async function createUser(prevState: AuthFormState, formData: FormData) {
-  const validateFields = createUserSchemaForm.safeParse({
+  let validateFields = createUserSchemaForm.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
     name: formData.get("name"),
     role: formData.get("role"),
-    // avatar_url: formData.get("avatar_url"),
+    avatar_url: formData.get("avatar_url"),
   });
 
   if (!validateFields.success) {
@@ -23,6 +24,32 @@ export async function createUser(prevState: AuthFormState, formData: FormData) {
     };
   }
 
+  if (validateFields.data.avatar_url instanceof File) {
+    const { errors, data } = await uploadFile(
+      "images",
+      "users",
+      validateFields.data.avatar_url
+    );
+
+    if (errors) {
+      return {
+        status: "error",
+        errors: {
+          ...prevState.errors,
+          _form: [...errors._form],
+        },
+      };
+    }
+
+    validateFields = {
+      ...validateFields,
+      data: {
+        ...validateFields.data,
+        avatar_url: data.path,
+      },
+    };
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     email: validateFields.data.email,
@@ -31,7 +58,7 @@ export async function createUser(prevState: AuthFormState, formData: FormData) {
       data: {
         name: validateFields.data.name,
         role: validateFields.data.role,
-        // avatar_url: validateFields.data.avatar_url,
+        avatar_url: validateFields.data.avatar_url,
       },
     },
   });
