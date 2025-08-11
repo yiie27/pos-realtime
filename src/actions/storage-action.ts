@@ -2,7 +2,8 @@
 
 import { environment } from "@/config/environment";
 import { createClient } from "@/lib/supabase/server";
-import { stat } from "fs";
+
+
 
 export async function uploadFile(
   bucket: string,
@@ -11,6 +12,7 @@ export async function uploadFile(
   prevPath?: string
 ) {
   const supabase = await createClient();
+
   const newPath = `${path}/${Date.now()}-${file.name}`;
 
   if (prevPath) {
@@ -46,6 +48,7 @@ export async function uploadFile(
 
 export async function deleteFile(bucket: string, path: string) {
   const supabase = await createClient();
+
   const { error } = await supabase.storage.from(bucket).remove([path]);
   if (error) {
     return {
