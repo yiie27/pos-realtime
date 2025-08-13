@@ -1,11 +1,7 @@
 import {
-  INITIAL_CREATE_USER,
-  INITIAL_STATE_CREATE_USER_FORM,
   INITIAL_STATE_UPDATE_USER_FORM,
 } from "@/constants/auth-constant";
 import {
-  CreateUserForm,
-  createUserSchemaForm,
   UpdateUserForm,
   updateUserSchemaForm,
 } from "@/validations/auth-validation";
@@ -13,11 +9,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { startTransition, useActionState, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { createUser, updateUser } from "../action";
+import { updateUser } from "../action";
 import { Preview } from "@/types/general";
 import FormUser from "./form-user";
 import { Profile } from "@/types/auth";
-import { set } from "zod";
 import { Dialog } from "@radix-ui/react-dialog";
 
 export default function DialogUpdateUser({
