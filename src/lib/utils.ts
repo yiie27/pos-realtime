@@ -8,14 +8,16 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function getImageData(event: ChangeEvent<HTMLInputElement>) {
-  // const dataTransfer = new DataTransfer();
-
-  // Array.from(event.target.files!).forEach((image) => {
-  //   dataTransfer.items.add(image);
-  // });
-
   const file = event.target.files![0];
   const displayUrl = URL.createObjectURL(file);
 
   return { file, displayUrl };
+}
+
+export function convertIDR(number: number) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(number);
 }
