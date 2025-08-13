@@ -66,3 +66,14 @@ export const ROLE_LIST = [
     label: "Waiter",
   },
 ];
+
+export const AVAILABILITY_LIST = [
+  {
+    value: "true",
+    label: "Available",
+  },
+  {
+    value: "false",
+    label: "Not Available",
+  },
+];
