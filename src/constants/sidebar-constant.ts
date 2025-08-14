@@ -1,4 +1,4 @@
-import { Album, LayoutDashboard, SquareMenu, Users } from "lucide-react";
+import { Album, LayoutDashboard, SquareMenu, Table, Users } from "lucide-react";
 
 export const SIDEBAR_MENU_LIST = {
   admin: [
@@ -16,6 +16,11 @@ export const SIDEBAR_MENU_LIST = {
       title: "Menu",
       url: "/admin/menu",
       icon: SquareMenu,
+    },
+    {
+      title: "Table",
+      url: "/admin/table",
+      icon: Table,
     },
     {
       title: "User",
