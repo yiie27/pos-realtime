@@ -1,17 +1,18 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { OrderFormState } from "@/types/order";
 import { TableFormState } from "@/types/table";
+import { orderFormSchema } from "@/validations/order-validation";
 import { tableSchema } from "@/validations/table-validation";
 
-export async function createTable(
-  prevState: TableFormState,
+export async function createOrder(
+  prevState: OrderFormState,
   formData: FormData
 ) {
-  let validatedFields = tableSchema.safeParse({
-    name: formData.get("name"),
-    description: formData.get("description"),
-    capacity: parseInt(formData.get("capacity") as string),
+  let validatedFields = orderFormSchema.safeParse({
+    customer_name: formData.get("customer_name"),
+    table_id: formData.get("table_id"),
     status: formData.get("status"),
   });
 
@@ -27,19 +28,38 @@ export async function createTable(
 
   const supabase = await createClient();
 
-  const { error } = await supabase.from("tables").insert({
-    name: validatedFields.data.name,
-    description: validatedFields.data.description,
-    capacity: validatedFields.data.capacity,
-    status: validatedFields.data.status,
-  });
+  const orderId = `YIIECAFE-${Date.now()}`;
 
-  if (error) {
+  const [orderResult, tableResult] = await Promise.all([
+    supabase.from("orders").insert({
+      order_id: orderId,
+      customer_name: validatedFields.data.customer_name,
+      table_id: validatedFields.data.table_id,
+      status: validatedFields.data.status,
+    }),
+    supabase
+      .from("tables")
+      .update({
+        status:
+          validatedFields.data.status === "reserved"
+            ? "reserved"
+            : "unavailable",
+      })
+      .eq("id", validatedFields.data.table_id),
+  ]);
+
+  const orderError = orderResult.error;
+  const tableError = tableResult.error;
+
+  if (orderError || tableError) {
     return {
       status: "error",
       errors: {
         ...prevState.errors,
-        _form: [error.message],
+        _form: [
+          ...(orderError ? [orderError.message] : []),
+          ...(tableError ? [tableError.message] : []),
+        ],
       },
     };
   }
