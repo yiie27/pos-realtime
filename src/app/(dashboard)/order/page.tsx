@@ -4,6 +4,6 @@ export const metadata = {
   title: "WPU Cafe | Order Management",
 };
 
-export default function TableManagementPage() {
+export default function OrderManagementPage() {
   return <OrderManagement />;
 }
