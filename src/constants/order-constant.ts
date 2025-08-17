@@ -41,3 +41,26 @@ export const HEADER_TABLE_DETAIL_ORDER = [
   "Status",
   "Action",
 ];
+
+export const FILTER_MENU = [
+  {
+    value: "",
+    label: "All",
+  },
+  {
+    value: "Minuman Kopi",
+    label: "Minuman Kopi",
+  },
+  {
+    value: "Makanan Ringan",
+    label: "Makanan Ringan",
+  },
+  {
+    value: "Makanan Berat",
+    label: "Makanan Berat",
+  },
+  {
+    value: "Minuman Non-Kopi",
+    label: "Minuman Non-Kopi",
+  },
+];
