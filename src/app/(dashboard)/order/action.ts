@@ -2,10 +2,11 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { FormState } from "@/types/general";
-import { OrderFormState } from "@/types/order";
+import { Cart, OrderFormState } from "@/types/order";
 import { TableFormState } from "@/types/table";
 import { orderFormSchema } from "@/validations/order-validation";
 import { tableSchema } from "@/validations/table-validation";
+import { redirect } from "next/navigation";
 
 export async function createOrder(
   prevState: OrderFormState,
@@ -114,25 +115,28 @@ export async function updateReservation(
   };
 }
 
-export async function deleteTable(
-  prevState: TableFormState,
-  formData: FormData
+export async function addOrderItem(
+  prevState: OrderFormState,
+  data: {
+    order_id: string;
+    items: Cart[];
+  }
 ) {
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("tables")
-    .delete()
-    .eq("id", formData.get("id"));
 
+  const payload = data.items.map(({ total, menu, ...item }) => item);
+
+  const { error } = await supabase.from("orders_menus").insert(payload);
   if (error) {
     return {
       status: "error",
       errors: {
-        ...prevState.errors,
-        _form: [error.message],
+        ...prevState,
+        _form: [],
       },
     };
   }
 
-  return { status: "success" };
+  redirect(`/order/${data.order_id}`);
 }
+
