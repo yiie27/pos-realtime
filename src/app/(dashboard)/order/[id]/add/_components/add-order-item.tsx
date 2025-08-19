@@ -13,8 +13,8 @@ import CartSection from "./cart";
 import { startTransition, useActionState, useState } from "react";
 import { Cart } from "@/types/order";
 import { Menu } from "@/validations/menu-validation";
-import { INITIAL_STATE_ACTION } from "@/constants/general-constant";
 import { addOrderItem } from "../../../action";
+import { INITIAL_STATE_ACTION } from "@/constants/general-constant";
 
 export default function AddOrderItem({ id }: { id: string }) {
   const supabase = createClient();
@@ -55,7 +55,7 @@ export default function AddOrderItem({ id }: { id: string }) {
     queryFn: async () => {
       const result = await supabase
         .from("orders")
-        .select("id, customer_name, status, payment_url, tables (name, id)")
+        .select("id, customer_name, status, payment_token, tables (name, id)")
         .eq("order_id", id)
         .single();
 

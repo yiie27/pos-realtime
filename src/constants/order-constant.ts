@@ -1,3 +1,5 @@
+import { da } from "zod/v4/locales";
+
 export const HEADER_TABLE_ORDER = [
   "No",
   "Order ID",
@@ -64,3 +66,10 @@ export const FILTER_MENU = [
     label: "Minuman Non-Kopi",
   },
 ];
+
+// export const INITIAL_STATE_GENERATE_PAYMENT = {
+//   ...INITIAL_STATE_ORDER,
+//   data: {
+//     payment_token: "",
+//   }
+// }
