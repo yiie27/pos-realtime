@@ -1,4 +1,4 @@
-import { da } from "zod/v4/locales";
+import { INITIAL_STATE_ACTION } from "./general-constant";
 
 export const HEADER_TABLE_ORDER = [
   "No",
@@ -67,9 +67,9 @@ export const FILTER_MENU = [
   },
 ];
 
-// export const INITIAL_STATE_GENERATE_PAYMENT = {
-//   ...INITIAL_STATE_ORDER,
-//   data: {
-//     payment_token: "",
-//   }
-// }
+export const INITIAL_STATE_GENERATE_PAYMENT = {
+  ...INITIAL_STATE_ACTION,
+  data: {
+    payment_token: "",
+  }
+}

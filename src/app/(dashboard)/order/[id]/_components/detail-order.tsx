@@ -12,17 +12,18 @@ import Link from "next/link";
 import { startTransition, useActionState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import Summary from "./summary";
-import { DropdownMenu } from "@radix-ui/react-dropdown-menu";
 import {
+  DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVertical } from "lucide-react";
 import { INITIAL_STATE_ACTION } from "@/constants/general-constant";
-import { updateStatusOrderItem } from "../../action";
+import { updateStatusOrderitem } from "../../action";
 
 export default function DetailOrder({ id }: { id: string }) {
+  console.log(id);
   const supabase = createClient();
   const { currentPage, currentLimit, handleChangePage, handleChangeLimit } =
     useDataTable();
@@ -46,7 +47,11 @@ export default function DetailOrder({ id }: { id: string }) {
     enabled: !!id,
   });
 
-  const { data: orderMenu, isLoading: isLoadingOrderMenu, refetch: refetchOrderMenu } = useQuery({
+  const {
+    data: orderMenu,
+    isLoading: isLoadingOrderMenu,
+    refetch: refetchOrderMenu,
+  } = useQuery({
     queryKey: ["orders_menu", order?.id, currentPage, currentLimit],
     queryFn: async () => {
       const result = await supabase
@@ -66,7 +71,7 @@ export default function DetailOrder({ id }: { id: string }) {
   });
 
   const [updateStatusOrderState, updateStatusOrderAction] = useActionState(
-    updateStatusOrderItem,
+    updateStatusOrderitem,
     INITIAL_STATE_ACTION
   );
 
@@ -171,9 +176,10 @@ export default function DetailOrder({ id }: { id: string }) {
       ? Math.ceil(orderMenu.count / currentLimit)
       : 0;
   }, [orderMenu]);
+
   return (
     <div className="w-full space-y-4">
-      <div className="flex gap-4 justify-between items-center w-full">
+      <div className="flex items-center justify-between gap-4 w-full">
         <h1 className="text-2xl font-bold">Detail Order</h1>
         <Link href={`/order/${id}/add`}>
           <Button>Add Order Item</Button>

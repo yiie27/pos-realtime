@@ -1,12 +1,12 @@
 "use server";
 
-import { environment } from "@/config/environment";
 import { createClient } from "@/lib/supabase/server";
 import { FormState } from "@/types/general";
 import { Cart, OrderFormState } from "@/types/order";
 import { orderFormSchema } from "@/validations/order-validation";
 import { redirect } from "next/navigation";
 import midtrans from "midtrans-client";
+import { environment } from "@/config/environment";
 
 export async function createOrder(
   prevState: OrderFormState,
@@ -30,7 +30,7 @@ export async function createOrder(
 
   const supabase = await createClient();
 
-  const orderId = `YIIECAFE-${Date.now()}`;
+  const orderId = `WPUCAFE-${Date.now()}`;
 
   const [orderResult, tableResult] = await Promise.all([
     supabase.from("orders").insert({
@@ -70,13 +70,12 @@ export async function createOrder(
     status: "success",
   };
 }
+
 export async function updateReservation(
   prevState: FormState,
   formData: FormData
 ) {
   const supabase = await createClient();
-
-  const orderId = `YIIECAFE-${Date.now()}`;
 
   const [orderResult, tableResult] = await Promise.all([
     supabase
@@ -132,7 +131,7 @@ export async function addOrderItem(
       status: "error",
       errors: {
         ...prevState,
-        _form: [error.message],
+        _form: [],
       },
     };
   }
@@ -140,11 +139,12 @@ export async function addOrderItem(
   redirect(`/order/${data.order_id}`);
 }
 
-export async function updateStatusOrderItem(
+export async function updateStatusOrderitem(
   prevState: FormState,
   formData: FormData
 ) {
   const supabase = await createClient();
+
   const { error } = await supabase
     .from("orders_menus")
     .update({

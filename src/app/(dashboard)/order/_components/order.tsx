@@ -25,10 +25,9 @@ import {
   INITIAL_STATE_ORDER,
 } from "@/constants/order-constant";
 import DialogCreateOrder from "./dialog-create-order";
-import { Order } from "@/validations/order-validation";
-import { updateReservation } from "../action";
 import { INITIAL_STATE_ACTION } from "@/constants/general-constant";
 import Link from "next/link";
+import { updateReservation } from "../action";
 
 export default function OrderManagement() {
   const supabase = createClient();
@@ -40,6 +39,7 @@ export default function OrderManagement() {
     handleChangeLimit,
     handleChangeSearch,
   } = useDataTable();
+
   const {
     data: orders,
     isLoading,
@@ -50,27 +50,27 @@ export default function OrderManagement() {
       const query = supabase
         .from("orders")
         .select(
-          `id, order_id, customer_name, status, payment_token, tables (name, id)`,
-          {
-            count: "exact",
-          }
+          `
+            id, order_id, customer_name, status, payment_token, tables (name, id)
+            `,
+          { count: "exact" }
         )
         .range((currentPage - 1) * currentLimit, currentPage * currentLimit - 1)
         .order("created_at");
 
       if (currentSearch) {
         query.or(
-          `order_id.ilike.%${currentSearch}%,customer_name.ilike.%${currentSearch}%,status.ilike.%${currentSearch}%`
+          `order_id.ilike.%${currentSearch}%,customer_name.ilike.%${currentSearch}%`
         );
       }
 
       const result = await query;
 
-      if (result.error) {
+      if (result.error)
         toast.error("Get Order data failed", {
           description: result.error.message,
         });
-      }
+
       return result;
     },
   });
@@ -83,18 +83,18 @@ export default function OrderManagement() {
         .select("*")
         .order("created_at")
         .order("status");
+
       return result.data;
     },
   });
+
   const [selectedAction, setSelectedAction] = useState<{
     data: Table;
     type: "update" | "delete";
   } | null>(null);
 
   const handleChangeAction = (open: boolean) => {
-    if (!open) {
-      setSelectedAction(null);
-    }
+    if (!open) setSelectedAction(null);
   };
 
   const totalPages = useMemo(() => {
@@ -107,6 +107,7 @@ export default function OrderManagement() {
     updateReservation,
     INITIAL_STATE_ACTION
   );
+
   const handleReservation = async ({
     id,
     table_id,
@@ -117,10 +118,9 @@ export default function OrderManagement() {
     status: string;
   }) => {
     const formData = new FormData();
-    Object.entries({ id, table_id, status }).forEach(([key, value]) => {
-      formData.append(key, value);
+    Object.entries({ id, table_id, status }).forEach(([Key, value]) => {
+      formData.append(Key, value);
     });
-
     startTransition(() => {
       reservedAction(formData);
     });
@@ -132,10 +132,10 @@ export default function OrderManagement() {
         description: reservedState.errors?._form?.[0],
       });
     }
+
     if (reservedState?.status === "success") {
       toast.success("Update Reservation Success");
-      refetch(); // update Order data after create
-      refetchTables();
+      refetch();
     }
   }, [reservedState]);
 
@@ -211,10 +211,11 @@ export default function OrderManagement() {
       ];
     });
   }, [orders]);
+
   return (
     <div className="w-full">
       <div className="flex flex-col lg:flex-row mb-4 gap-2 justify-between w-full">
-        <h1 className="text-2xl font-bold">Table Management</h1>
+        <h1 className="text-2xl font-bold">Order Management</h1>
         <div className="flex gap-2">
           <Input
             placeholder="Search..."
@@ -238,18 +239,6 @@ export default function OrderManagement() {
         onChangePage={handleChangePage}
         onChangeLimit={handleChangeLimit}
       />
-      {/* <DialogUpdateTable
-        open={selectedAction !== null && selectedAction.type === "update"}
-        refetch={refetch}
-        currentData={selectedAction?.data}
-        handleChangeAction={handleChangeAction}
-      />
-      <DialogDeleteTable
-        open={selectedAction !== null && selectedAction.type === "delete"}
-        refetch={refetch}
-        currentData={selectedAction?.data}
-        handleChangeAction={handleChangeAction}
-      /> */}
     </div>
   );
 }

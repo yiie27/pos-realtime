@@ -1,17 +1,24 @@
-import { environment } from "@/config/environment";
-import DetailOrder from "./_components/detail-order";
 import Script from "next/script";
+import DetailOrder from "./_components/detail-order";
+import { environment } from "@/config/environment";
 
 export const metadata = {
   title: "WPU Cafe | Detail Order",
 };
 
-export default async function DetailOrderPage({
+declare global {
+  interface Window {
+    snap: any;
+  }
+}
+
+export default function DetailOrderPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
-  const { id } = await params;
+  const { id } = params;
+
   return (
     <div className="w-full">
       <Script
