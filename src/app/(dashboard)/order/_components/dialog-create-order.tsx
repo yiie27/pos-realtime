@@ -25,10 +25,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 export default function DialogCreateOrder({
-  refetch,
   tables,
 }: {
-  refetch: () => void;
   tables: Table[] | undefined | null;
 }) {
   const form = useForm<OrderForm>({
@@ -60,7 +58,6 @@ export default function DialogCreateOrder({
       toast.success("Create Order Success");
       form.reset();
       document.querySelector<HTMLDialogElement>("[data-state='open']")?.click();
-      refetch(); // update Order data after create
     }
   }, [createOrderState]);
   return (

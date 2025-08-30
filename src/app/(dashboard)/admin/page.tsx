@@ -1,11 +1,8 @@
+import Dashboard from "./_components/dashboard";
+
 export const metadata = {
-    title: "Cafe | Dashboard",
-}
-export default function AdminDashboardPage() {
-  return (
-    <div>
-      <h1>Dashboard</h1>
-      {/* Add your admin dashboard components here */}
-    </div>
-  );
+  title: "Cafe | Dashboard",
+};
+export default function DashboardPage() {
+  return <Dashboard />;
 }

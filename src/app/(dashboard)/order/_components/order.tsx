@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import useDataTable from "@/hooks/use-data-table";
-import { createClient } from "@/lib/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Ban, Link2Icon, Pencil, ScrollText, Trash2 } from "lucide-react";
 import {
@@ -29,9 +28,10 @@ import { INITIAL_STATE_ACTION } from "@/constants/general-constant";
 import Link from "next/link";
 import { updateReservation } from "../action";
 import { useAuthStore } from "@/stores/auth-store";
+import { createClientSupabase } from "@/lib/supabase/default";
 
 export default function OrderManagement() {
-  const supabase = createClient();
+  const supabase = createClientSupabase();
   const {
     currentPage,
     currentLimit,
@@ -44,7 +44,7 @@ export default function OrderManagement() {
   const {
     data: orders,
     isLoading,
-    refetch,
+    refetch: refetchOrders,
   } = useQuery({
     queryKey: ["orders", currentPage, currentLimit, currentSearch],
     queryFn: async () => {
@@ -75,6 +75,28 @@ export default function OrderManagement() {
       return result;
     },
   });
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("change-order")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "orders",
+        },
+        () => {
+          refetchOrders();
+          refetchTables();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const { data: tables, refetch: refetchTables } = useQuery({
     queryKey: ["tables"],
@@ -136,7 +158,7 @@ export default function OrderManagement() {
 
     if (reservedState?.status === "success") {
       toast.success("Update Reservation Success");
-      refetch();
+      refetchOrders();
     }
   }, [reservedState]);
 
@@ -227,7 +249,7 @@ export default function OrderManagement() {
               <DialogTrigger asChild>
                 <Button variant="outline">Create</Button>
               </DialogTrigger>
-              <DialogCreateOrder tables={tables} refetch={refetch} />
+              <DialogCreateOrder tables={tables} />
             </Dialog>
           )}
         </div>
