@@ -12,6 +12,7 @@ export default function LineCharts({
 }: {
   data: { name: string; total: number }[] | undefined;
 }) {
+  console.log(data);
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart width={300} height={100} data={data}>
