@@ -14,6 +14,7 @@ import { createClient } from "@/lib/supabase/client";
 import { convertIDR } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { format } from "date-fns";
 
 export default function Dashboard() {
   const supabase = createClient();
@@ -130,7 +131,6 @@ export default function Dashboard() {
       return data;
     },
   });
-console.log("order",orders);
   return (
     <div className="w-full">
       <div className="flex flex-col lg:flex-row mb-4 gap-2 justify-between w-full">
@@ -195,8 +195,8 @@ console.log("order",orders);
           <CardHeader>
             <CardTitle>Order Create Per Week</CardTitle>
             <CardDescription>
-              Showing orders from {lastWeek.toLocaleDateString()} to{" "}
-              {new Date().toLocaleDateString()}
+              Showing orders from {format(lastWeek, "dd/MM/yyyy")} to{" "}
+              {format(new Date(), "dd/MM/yyyy")}
             </CardDescription>
           </CardHeader>
           <div className="w-full h-64 p-6">
