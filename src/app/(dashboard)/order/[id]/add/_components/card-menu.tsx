@@ -15,7 +15,7 @@ export default function CardMenu({
   return (
     <Card
       key={menu.id}
-      className="w-full h-fit border shadow-sm p-0 gap-0 flex flex-col justify-between"
+      className="w-full border shadow-sm p-0 gap-0 flex flex-col justify-between"
     >
       <CardContent className="p-0">
         <Image
@@ -33,7 +33,19 @@ export default function CardMenu({
         </div>
       </CardContent>
       <CardFooter className="p-4 flex justify-between items-center">
-        <div className="text-xl font-bold">{convertIDR(menu.price)}</div>
+        <div>
+          {menu.discount > 0 && (
+            <div className="text-sm line-through text-muted-foreground">
+              {convertIDR(menu.price)}
+            </div>
+          )}
+          <div className="text-xl font-bold">
+            {menu.discount > 0
+              ? convertIDR(menu.price - menu.price * (menu.discount / 100))
+              : convertIDR(menu.price)}
+          </div>
+        </div>
+
         <Button
           className="cursor-pointer"
           onClick={() => onAddToCart(menu, "increment")}
