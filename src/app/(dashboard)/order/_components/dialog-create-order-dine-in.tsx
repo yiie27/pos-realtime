@@ -9,7 +9,6 @@ import {
   INITIAL_STATE_ORDER,
   STATUS_CREATE_ORDER,
 } from "@/constants/order-constant";
-import { createOrder } from "../action";
 import {
   DialogClose,
   DialogContent,
@@ -23,13 +22,21 @@ import FormInput from "@/components/common/form-input";
 import FormSelect from "@/components/common/form-select";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { createOrder } from "../action";
 
 export default function DialogCreateOrderDineIn({
   tables,
   closeDialog,
+  selectedTable,
 }: {
-  tables: Table[] | undefined | null;
+  tables?: Table[] | undefined | null;
   closeDialog: () => void;
+  selectedTable?: {
+    id: string;
+    name: string;
+  };
 }) {
   const form = useForm<OrderForm>({
     resolver: zodResolver(orderFormSchema),
@@ -39,7 +46,7 @@ export default function DialogCreateOrderDineIn({
   const [createOrderState, createOrderAction, isPendingCreateOrder] =
     useActionState(createOrder, INITIAL_STATE_ORDER);
 
-  const onSubmit = form.handleSubmit(async (data) => {
+  const onSubmit = form.handleSubmit((data) => {
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       formData.append(key, value);
@@ -51,17 +58,25 @@ export default function DialogCreateOrderDineIn({
   });
 
   useEffect(() => {
+    if (selectedTable) {
+      form.setValue("table_id", `${selectedTable.id}`);
+    }
+  }, [selectedTable]);
+
+  useEffect(() => {
     if (createOrderState?.status === "error") {
       toast.error("Create Order Failed", {
         description: createOrderState.errors?._form?.[0],
       });
     }
+
     if (createOrderState?.status === "success") {
       toast.success("Create Order Success");
       form.reset();
       closeDialog();
     }
   }, [createOrderState]);
+
   return (
     <DialogContent className="sm:max-w-[425px] max-h-[90vh]">
       <Form {...form}>
@@ -70,26 +85,34 @@ export default function DialogCreateOrderDineIn({
           <DialogDescription>Add a new order from customer</DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
-          <div className="space-y-4 p-1 max-h-[50vh] overflow-y-auto">
+          <div className="space-y-4 max-h-[50vh] p-1 overflow-y-auto">
             <FormInput
               form={form}
-              name={"customer_name"}
-              label="Name"
+              name="customer_name"
+              label="Customer Name"
               placeholder="Insert customer name here"
             />
+            {selectedTable ? (
+              <div className="space-y-2">
+                <Label>Table</Label>
+                <Input name="table_id" value={selectedTable.name} disabled />
+              </div>
+            ) : (
+              <FormSelect
+                form={form}
+                name="table_id"
+                label="Table"
+                selectItem={(tables ?? []).map((table: Table) => ({
+                  value: `${table.id}`,
+                  label: `${table.name} - ${table.status} (${table.capacity})`,
+                  disabled: table.status !== "available",
+                }))}
+              />
+            )}
+
             <FormSelect
               form={form}
-              name={"table_id"}
-              label="Table"
-              selectItem={(tables ?? []).map((table: Table) => ({
-                value: `${table.id}`,
-                label: `${table.name} - ${table.status} (${table.capacity})`,
-                disabled: table.status !== "available",
-              }))}
-            />
-            <FormSelect
-              form={form}
-              name={"status"}
+              name="status"
               label="Status"
               selectItem={STATUS_CREATE_ORDER}
             />

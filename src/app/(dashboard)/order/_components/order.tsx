@@ -6,16 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import useDataTable from "@/hooks/use-data-table";
+import { createClientSupabase } from "@/lib/supabase/default";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Ban,
-  Link2Icon,
-  Package,
-  Pencil,
-  ScrollText,
-  Trash2,
-  Utensils,
-} from "lucide-react";
+import { Ban, Link2Icon, Package, ScrollText, Utensils } from "lucide-react";
 import {
   startTransition,
   useActionState,
@@ -26,15 +19,10 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Table } from "@/validations/table-validation";
-import {
-  HEADER_TABLE_ORDER,
-  INITIAL_STATE_ORDER,
-} from "@/constants/order-constant";
+import { HEADER_TABLE_ORDER } from "@/constants/order-constant";
 import { INITIAL_STATE_ACTION } from "@/constants/general-constant";
 import Link from "next/link";
-import { updateReservation } from "../action";
 import { useAuthStore } from "@/stores/auth-store";
-import { createClientSupabase } from "@/lib/supabase/default";
 import DialogCreateOrderDineIn from "./dialog-create-order-dine-in";
 import {
   DropdownMenu,
@@ -46,6 +34,7 @@ import {
 import DialogCreateOrderTakeaway from "./dialog-create-order-takeaway";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TableMap from "./table-map";
+import { updateReservation } from "../action";
 
 export default function OrderManagement() {
   const supabase = createClientSupabase();
@@ -58,6 +47,7 @@ export default function OrderManagement() {
     handleChangeSearch,
   } = useDataTable();
   const profile = useAuthStore((state) => state.profile);
+
   const {
     data: orders,
     isLoading,
@@ -93,28 +83,6 @@ export default function OrderManagement() {
     },
   });
 
-  useEffect(() => {
-    const channel = supabase
-      .channel("change-order")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "orders",
-        },
-        () => {
-          refetchOrders();
-          refetchTables();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
   const { data: tables, refetch: refetchTables } = useQuery({
     queryKey: ["tables"],
     queryFn: async () => {
@@ -128,10 +96,52 @@ export default function OrderManagement() {
     },
   });
 
-  const [selectedAction, setSelectedAction] = useState<{
-    data: Table;
-    type: "update" | "delete";
-  } | null>(null);
+  const { data: activeOrders, refetch: refetchActiveOrders } = useQuery({
+    queryKey: ["active-orders"],
+    queryFn: async () => {
+      const query = supabase
+        .from("orders")
+        .select(
+          `
+            id, order_id, customer_name, status, payment_token, tables (name, id)
+            `
+        )
+        .in("status", ["process", "reserved"])
+        .order("created_at");
+
+      const result = await query;
+
+      if (result.error)
+        toast.error("Get Order data failed", {
+          description: result.error.message,
+        });
+
+      return result.data;
+    },
+  });
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("change-order")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "orders",
+        },
+        () => {
+          refetchOrders();
+          refetchTables();
+          refetchActiveOrders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const totalPages = useMemo(() => {
     return orders && orders.count !== null
@@ -260,6 +270,7 @@ export default function OrderManagement() {
             <TabsTrigger value="map">Table Map</TabsTrigger>
           </TabsList>
         </div>
+
         <TabsContent value="list">
           <div className="flex gap-2 justify-between mb-4">
             <Input
@@ -316,7 +327,7 @@ export default function OrderManagement() {
         </TabsContent>
 
         <TabsContent value="map">
-          <TableMap tables={tables || []} />
+          <TableMap tables={tables || []} activeOrders={activeOrders || []} />
         </TabsContent>
       </Tabs>
     </div>
